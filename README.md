@@ -2,9 +2,9 @@
 
 ## Identifying Communities With High Environmental Burden and Low Political Representation
 
-This project analyzes where environmental risk and political underrepresentation overlap across U.S. counties. It combines EPA EJSCREEN environmental indicators, CDC Social Vulnerability Index data, congressional district shapefiles, and League of Conservation Voters scorecard data to identify communities that face high environmental burdens while receiving comparatively low environmental policy support from elected representatives.
+This project analyzes where environmental risk and political underrepresentation overlap across U.S. counties. It combines EPA EJSCREEN environmental indicators, CDC Social Vulnerability Index data, and League of Conservation Voters scorecard data to identify communities that face high environmental burdens while receiving comparatively low environmental policy support from elected representatives.
 
-The result is a county-level prioritization framework for environmental justice outreach, advocacy, and policy intervention. The analysis produces ranked county lists, state-level summaries, demographic disparity metrics, publication-ready visualizations, and an interactive dashboard prototype.
+The result is a county-level analytical dashboard for inspecting environmental burden, social vulnerability, and a state-average environmental voting score proxy. The project produces ranked county lists, state summaries, dashboard-ready data, and an interactive React site.
 
 ![Environmental Justice Overview](environmental_justice_comprehensive_analysis.png)
 
@@ -12,10 +12,10 @@ The result is a county-level prioritization framework for environmental justice 
 
 - Analyzed environmental and demographic indicators across 86,000+ census tracts and aggregated them to county-level insights.
 - Built a Justice Gap Index that compares environmental burden against political environmental advocacy.
-- Integrated EPA, CDC, LCV, Census, and congressional district data into one analytical workflow.
+- Integrated EPA, CDC, LCV, and Census data into one analytical workflow.
 - Identified priority counties where high environmental burden overlaps with low LCV representation scores.
 - Produced executive-ready outputs, including summary metrics, state priority rankings, county intervention lists, and visual reports.
-- Created static and interactive visualizations for both technical exploration and stakeholder communication.
+- Created static visual reports and an interactive single-page dashboard for technical review.
 
 ## Why This Project Matters
 
@@ -32,13 +32,13 @@ By quantifying that mismatch, this analysis helps answer practical questions:
 
 ### Justice Gap Index
 
-The project introduces a normalized Justice Gap Index that compares environmental burden with political representation:
+The project introduces a normalized Justice Gap Index that compares environmental burden with a political representation proxy:
 
 ```text
-Justice Gap Index = Environmental Burden Z-score - LCV Score Z-score
+Justice Gap Index = Environmental Burden Z-score - State-Average LCV Score Z-score
 ```
 
-Positive values indicate counties where environmental burden is high relative to environmental policy representation. Larger positive values suggest greater need for advocacy, organizing, or policy intervention.
+Positive values indicate counties where environmental burden is high relative to the current environmental policy representation proxy. In the current version of the analysis, LCV values are averaged at the state delegation level and merged back to counties.
 
 ### Population-Weighted Environmental Burden
 
@@ -120,7 +120,7 @@ The state-level rankings highlight areas where justice gaps are concentrated. Th
 - Geospatial processing with GeoPandas and Census shapefiles
 - Statistical modeling with scikit-learn and statsmodels
 - Index design using normalization and composite scoring
-- Dashboard prototyping with Plotly Dash
+- Interactive dashboard development with React, TypeScript, D3 Geo, and TopoJSON
 - Static data visualization with Matplotlib and Seaborn
 - Export workflows for CSV, Tableau, and presentation-ready graphics
 
@@ -136,11 +136,11 @@ EJSCREEN indicators are grouped into environmental and demographic burden compon
 
 ### 3. Representation Scoring
 
-LCV scorecard data is cleaned and aggregated to estimate environmental policy support by state and congressional representation. Lower LCV scores indicate weaker environmental voting records.
+LCV scorecard data is cleaned and aggregated to estimate environmental policy support at the state delegation level. Lower LCV scores indicate weaker environmental voting records.
 
 ### 4. Justice Gap Calculation
 
-Environmental burden and LCV scores are standardized using Z-scores. The Justice Gap Index is calculated by subtracting representation strength from environmental burden. This highlights counties where environmental risk is high but environmental advocacy is low.
+Environmental burden and state-average LCV scores are standardized using Z-scores. The Justice Gap Index is calculated by subtracting representation strength from environmental burden. This highlights counties where environmental risk is high but the current representation proxy is low.
 
 ### 5. Ranking and Segmentation
 
@@ -152,9 +152,31 @@ The final workflow produces CSV deliverables, static reports, and dashboard-read
 
 ## Installation and Usage
 
+### Interactive Website
+
+The portfolio site is a Vite + React dashboard that reads processed frontend data from `public/data/`.
+
+```bash
+npm install
+npm run dev
+```
+
+Build for deployment:
+
+```bash
+npm run build
+```
+
+The production output is written to `dist/` and can be deployed to any static host that supports Vite builds.
+
+Frontend data files:
+
+- `public/data/dashboard-counties.json`
+- `public/data/us-counties-albers-10m.json`
+
 ### Requirements
 
-This project was built in Python and uses common data science and geospatial libraries:
+The analysis notebook uses common Python data science and geospatial libraries:
 
 ```bash
 pip install pandas numpy matplotlib seaborn scikit-learn statsmodels plotly dash geopandas shapely folium openpyxl
@@ -173,6 +195,10 @@ Run the notebook cells from top to bottom to regenerate the ranked CSV files and
 ### Data Notes
 
 Large source datasets are included locally in this working project. If publishing to GitHub, consider excluding large raw files and documenting download links instead, especially for EJSCREEN CSV files and geospatial data.
+
+### Current Representation Measure
+
+The current dashboard does not assign LCV scores at the district or county level. It uses the mean LCV score for each state delegation and merges that value back to every county in the same state. This makes the scatter plot and related panels useful for state-level representation patterns, but not for district-level inference.
 
 ## Example Outputs
 
@@ -211,11 +237,10 @@ tableau_state_summary.csv
 ## Future Improvements
 
 - Add a dedicated `requirements.txt` for reproducible setup.
-- Move dashboard code into a standalone `dashboard.py` app.
 - Add county-to-district spatial joins for more precise representative matching.
 - Incorporate time-series LCV scores to track changes in representation over time.
 - Add health outcomes data such as asthma, cancer risk, or hospitalization rates.
-- Build a public-facing dashboard with filters for state, party, demographic group, and burden type.
+- Add dashboard filters for state, party, demographic group, and burden type.
 - Add automated validation checks for FIPS matching and missing values.
 
 ## Project Value

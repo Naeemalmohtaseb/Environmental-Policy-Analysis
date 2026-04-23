@@ -37,3 +37,5 @@ dist/
 .vite/
 npm-debug.log*
 vite-dev*.log
+!public/data/
+!public/data/*.json

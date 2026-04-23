@@ -38,7 +38,7 @@ body {
   }
 
   .dashboard-nav-item {
-    @apply shrink-0 rounded-sm border border-transparent px-3 py-2 text-xs font-semibold text-muted transition hover:border-line hover:bg-panel hover:text-ink;
+    @apply shrink-0 rounded-sm border border-transparent px-3 py-2 text-xs font-semibold text-muted transition hover:border-line hover:bg-panel hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
   }
 
   .dashboard-nav-item-active {
@@ -46,7 +46,7 @@ body {
   }
 
   .dashboard-panel {
-    @apply grid gap-4 border-t border-line py-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-5;
+    @apply grid gap-5 border-t border-line py-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-6 xl:grid-cols-[300px_minmax(0,1fr)];
   }
 
   .panel-copy {
@@ -58,7 +58,7 @@ body {
   }
 
   .chart-container {
-    @apply rounded-sm border border-line bg-panel p-3 shadow-soft;
+    @apply rounded-sm border border-line bg-panel p-2.5 shadow-soft sm:p-3;
   }
 
   .chart-toolbar {
@@ -69,28 +69,24 @@ body {
     @apply mt-3 border-t border-line pt-3;
   }
 
+  .chart-note {
+    @apply border-t border-line px-2 pt-2 text-xs text-muted;
+  }
+
   .filter-row {
     @apply flex flex-wrap items-center gap-2;
   }
 
   .filter-select {
-    @apply flex items-center gap-2 rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs text-muted;
+    @apply flex items-center gap-2 rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs text-muted focus-within:border-accent;
   }
 
   .filter-select select {
     @apply bg-transparent text-xs font-medium text-ink outline-none;
   }
 
-  .segmented-control {
-    @apply inline-flex overflow-hidden rounded-sm border border-line bg-panel text-xs;
-  }
-
-  .segmented-control button {
-    @apply border-r border-line px-2.5 py-1.5 text-muted transition last:border-r-0 hover:bg-accent-pale hover:text-ink;
-  }
-
-  .segmented-control .segmented-active {
-    @apply bg-accent-pale text-accent-dark;
+  .filter-select input {
+    @apply min-w-[9rem] bg-transparent text-xs font-medium text-ink outline-none;
   }
 
   .legend-row {
@@ -102,19 +98,210 @@ body {
   }
 
   .table-search {
-    @apply w-32 rounded-sm border border-line bg-paper px-2.5 py-1.5 text-xs outline-none focus:border-accent;
+    @apply w-28 rounded-sm border border-line bg-paper px-2.5 py-1.5 text-xs outline-none focus:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent sm:w-32;
   }
 
-  .placeholder-viz {
-    @apply relative min-h-[300px] overflow-hidden rounded-sm border border-dashed border-line bg-paper;
-    background-image:
-      linear-gradient(to right, rgba(31, 41, 51, 0.055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(31, 41, 51, 0.055) 1px, transparent 1px);
-    background-size: 40px 40px;
+  .control-button {
+    @apply rounded-sm border border-line px-2.5 py-1.5 text-xs text-muted transition hover:border-accent hover:text-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent;
   }
 
-  .placeholder-label {
-    @apply absolute left-3 top-3 z-10 rounded-sm border border-line bg-panel px-2.5 py-1.5 text-xs font-medium uppercase tracking-[0.12em] text-muted;
+  .county-map-frame {
+    @apply relative rounded-sm border border-line bg-paper p-2;
+  }
+
+  .county-map {
+    @apply block h-auto w-full;
+    cursor: grab;
+  }
+
+  .county-map:active {
+    cursor: grabbing;
+  }
+
+  .map-inline-controls {
+    @apply mb-2 flex flex-wrap justify-end gap-2;
+  }
+
+  .county-path {
+    @apply transition;
+    cursor: default;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .county-path-data {
+    cursor: pointer;
+  }
+
+  .county-path-data:hover {
+    filter: brightness(0.94);
+  }
+
+  .county-path-missing {
+    opacity: 0.55;
+  }
+
+  .county-path-selected {
+    filter: brightness(0.84);
+  }
+
+  .county-path:focus-visible {
+    outline: none !important;
+    stroke: #1f2933;
+    stroke-width: 1.8;
+  }
+
+  .map-tooltip {
+    @apply pointer-events-none fixed z-50 max-w-[240px] rounded-sm border border-line bg-panel px-3 py-2 text-xs leading-5 text-muted shadow-soft;
+  }
+
+  .map-tooltip-contained {
+    @apply absolute;
+  }
+
+  .map-status {
+    @apply flex flex-wrap justify-between gap-2 border-t border-line px-2 pt-2 text-xs text-muted;
+  }
+
+  .map-empty-state {
+    @apply flex min-h-[300px] items-center justify-center rounded-sm border border-dashed border-line bg-paper p-4 text-sm text-muted;
+  }
+
+  .chart-svg-wrap {
+    @apply relative overflow-hidden rounded-sm border border-line bg-paper p-1 sm:p-2;
+  }
+
+  .chart-svg {
+    @apply block h-auto w-full overflow-visible;
+  }
+
+  .chart-grid {
+    stroke: rgba(31, 41, 51, 0.09);
+    stroke-width: 1;
+  }
+
+  .chart-tick {
+    fill: #5f6b76;
+    font-size: 11px;
+  }
+
+  .chart-axis-label {
+    fill: #5f6b76;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .chart-value-label {
+    fill: #1f2933;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .scatter-point {
+    cursor: pointer;
+    opacity: 0.62;
+    transition:
+      opacity 140ms ease,
+      stroke-width 140ms ease;
+  }
+
+  .scatter-point:hover,
+  .scatter-point-selected {
+    opacity: 1;
+  }
+
+  .regression-line {
+    stroke: rgba(31, 41, 51, 0.38);
+    stroke-dasharray: 5 5;
+    stroke-width: 1.2;
+  }
+
+  .bar-row {
+    cursor: pointer;
+  }
+
+  .bar-row:hover .bar-fill {
+    fill: #24564f;
+  }
+
+  .bar-fill {
+    fill: rgba(47, 111, 104, 0.62);
+    transition: fill 140ms ease;
+  }
+
+  .bar-fill-selected {
+    fill: #1f2933;
+  }
+
+  .state-bar-positive {
+    fill: rgba(47, 111, 104, 0.62);
+    transition: fill 140ms ease;
+  }
+
+  .state-bar-negative {
+    fill: rgba(159, 79, 63, 0.72);
+    transition: fill 140ms ease;
+  }
+
+  .bar-row:hover .state-bar-positive {
+    fill: #24564f;
+  }
+
+  .bar-row:hover .state-bar-negative {
+    fill: #8f4337;
+  }
+
+  .state-zero-line {
+    stroke: rgba(31, 41, 51, 0.3);
+    stroke-width: 1.2;
+  }
+
+  .party-bar {
+    transition:
+      opacity 140ms ease,
+      filter 140ms ease;
+  }
+
+  .party-bar:hover {
+    filter: brightness(0.94);
+  }
+
+  .selected-row {
+    @apply bg-accent-pale/90 shadow-[inset_3px_0_0_#1f2933];
+  }
+
+  .histogram-bar {
+    fill: rgba(47, 111, 104, 0.52);
+  }
+
+  .histogram-bar:hover {
+    fill: #24564f;
+  }
+
+  .threshold-line {
+    stroke: #9f4f3f;
+    stroke-dasharray: 4 4;
+    stroke-width: 1.2;
+  }
+
+  .selected-line {
+    stroke: #1f2933;
+    stroke-width: 1.8;
+  }
+
+  .chart-selection-note {
+    @apply border-t border-line px-2 pt-2 text-xs text-muted;
+  }
+
+  .chart-empty-state {
+    @apply flex min-h-[260px] items-center justify-center rounded-sm border border-dashed border-line bg-paper p-4 text-sm text-muted;
+  }
+
+  .demographic-summary-grid {
+    @apply grid gap-3 md:grid-cols-3;
+  }
+
+  .metric-tile {
+    @apply rounded-sm border border-line bg-paper p-4;
   }
 }
 
@@ -131,79 +318,25 @@ body {
   }
 }
 
-.map-cell {
-  min-height: 1.45rem;
-  border-radius: 2px;
-  border: 1px solid rgba(31, 41, 51, 0.08);
-  transition:
-    border-color 140ms ease,
-    transform 140ms ease;
-}
-
-.map-cell:hover {
-  border-color: rgba(47, 111, 104, 0.65);
-  transform: translateY(-1px);
-}
-
-.shade-0 {
-  background: #edf2ec;
-}
-
-.shade-1 {
-  background: #dbe7de;
-}
-
-.shade-2 {
-  background: #c7d7cc;
-}
-
-.shade-3 {
-  background: #d7c98f;
-}
-
-.shade-4 {
-  background: #b6604b;
-}
-
-.placeholder-map {
-  min-height: 440px;
-}
-
-.placeholder-scatter::before,
-.placeholder-bars::before,
-.placeholder-grouped::before,
-.placeholder-dumbbell::before,
-.placeholder-histogram::before {
-  content: '';
-  position: absolute;
-  left: 2rem;
-  right: 2rem;
-  bottom: 2rem;
-  height: 1px;
-  background: #cfd6ce;
-}
-
-.placeholder-scatter::after,
-.placeholder-bars::after,
-.placeholder-grouped::after,
-.placeholder-dumbbell::after,
-.placeholder-histogram::after {
-  content: '';
-  position: absolute;
-  left: 2rem;
-  top: 3.5rem;
-  bottom: 2rem;
-  width: 1px;
-  background: #cfd6ce;
-}
-
 @media (max-width: 640px) {
-  .placeholder-viz {
-    min-height: 260px;
+  html {
+    scroll-padding-top: 6.5rem;
   }
 
-  .placeholder-map {
-    min-height: 340px;
+  .dashboard-nav-item {
+    @apply px-2.5 py-1.5 text-[11px];
+  }
+
+  .chart-toolbar {
+    @apply gap-2;
+  }
+
+  .legend-row {
+    @apply gap-2;
+  }
+
+  .map-tooltip {
+    @apply left-3 right-3 max-w-none;
   }
 }
 
@@ -213,7 +346,9 @@ body {
   }
 
   .subtle-fade,
-  .map-cell {
+  .county-path,
+  .scatter-point,
+  .bar-fill {
     animation: none;
     transition: none;
   }

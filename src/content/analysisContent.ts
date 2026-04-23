@@ -4,12 +4,6 @@ export type Kpi = {
   description: string;
 };
 
-export type CountyDetail = {
-  name: string;
-  description: string;
-  metrics: Array<{ label: string; value: string }>;
-};
-
 export type MethodStepContent = {
   title: string;
   description: string;
@@ -30,23 +24,32 @@ export type PriorityCounty = {
 
 export const analysisContent = {
   navigation: [
-    { id: 'map', label: 'Map' },
-    { id: 'relationship', label: 'Relationship' },
+    { id: 'map', label: 'County Gap Map' },
+    { id: 'relationship', label: 'Burden vs. Representation' },
     { id: 'priority-counties', label: 'Priority Counties' },
     { id: 'state-summary', label: 'State Summary' },
     { id: 'party-comparison', label: 'Party Comparison' },
     { id: 'demographics', label: 'Demographics' },
-    { id: 'distribution', label: 'Distribution' },
+    { id: 'distribution', label: 'Gap Score Distribution' },
     { id: 'method', label: 'Method' },
   ],
   hero: {
     eyebrow: 'Data science / environmental policy',
     title: 'Environmental Justice Gap Analysis',
-    subtitle:
-      'County-level gap between environmental burden, social vulnerability, and environmental voting score.',
+    subtitle: 'County-level ranking of environmental burden, social vulnerability, and state-average environmental voting score.',
     summary:
-      'The project combines tract aggregation, vulnerability data, LCV scorecard records, and geospatial context. The interface is structured for inspection of map, ranking, relationship, and distribution views.',
-    metadata: ['Python', 'GeoPandas', 'EJSCREEN', 'CDC SVI', 'LCV scorecard', 'React dashboard scaffold'],
+      'This dashboard is built from processed county records derived from EJSCREEN tracts, CDC SVI, and League of Conservation Voters scorecard data. In the current extract, LCV values are state-level delegation averages merged back to counties rather than district-level county scores.',
+    metadata: ['Geospatial policy analysis', 'County dashboard', 'Public data integration'],
+  },
+  overview: {
+    title: 'What this analysis shows',
+    sentences: [
+      'The justice gap compares local environmental burden with the level of environmental voting support attached to each county.',
+      'It combines tract-level EJSCREEN indicators, county social vulnerability measures, and League of Conservation Voters scorecard data.',
+      'Higher gap scores indicate counties with higher burden and lower environmental voting support. Lower scores indicate closer alignment between burden and support.',
+      'The current dashboard uses state-average LCV delegation scores, so counties in the same state share the same voting-score value.',
+      'Use the map to inspect counties, then compare burden, ranking, and state-level representation patterns across the other views.',
+    ],
   },
   kpis: [
     {
@@ -57,12 +60,12 @@ export const analysisContent = {
     {
       label: 'Counties ranked',
       value: '3.5K+',
-      description: 'County records scored for environmental burden and representation.',
+      description: 'County records scored for environmental burden and the current representation proxy.',
     },
     {
       label: 'Extreme-gap counties',
       value: '197',
-      description: 'Counties above the current placeholder threshold.',
+      description: 'Counties with Justice Gap 2.0 score above 2.',
     },
     {
       label: 'Top-priority population',
@@ -72,128 +75,90 @@ export const analysisContent = {
     {
       label: 'Lawmakers scored',
       value: '548',
-      description: 'LCV scorecard records used for environmental voting context.',
+      description: 'LCV scorecard records used to build state-average delegation scores.',
     },
   ],
   sections: {
     map: {
       title: 'County Gap Map',
       description:
-        'County-level choropleth shell for gap score, burden score, and representation score. Filters and county detail are placeholders for the next data pass.',
+        'County-level map of justice gap score. Select a county to inspect burden, vulnerability, population, and state-average LCV metrics.',
     },
     scatter: {
-      title: 'Burden vs. Representation',
-      description:
-        'Scatter shell comparing environmental burden with environmental voting score. Color and size controls are reserved for later wiring.',
+      title: 'Burden vs. State-Average Voting Score',
+      description: 'County-level comparison of environmental burden score and the state-average LCV delegation score.',
     },
     priority: {
       title: 'Top Counties by Gap Score',
-      description:
-        'Ranked view for counties with the highest gap scores. The table is a structural placeholder for filtering and row selection.',
+      description: 'Highest-ranked counties by Justice Gap 2.0 score. Table and bars share the selected county state.',
     },
     states: {
       title: 'State Summary',
-      description:
-        'State-level summary of county gap scores. This is a grouping layer, not a substitute for county-level inspection.',
-      note:
-        'Future wiring can link state selections to county filters and map focus.',
+      description: 'Average county gap score by state.',
+      note: 'State values summarize county patterns and do not replace county-level detail.',
     },
     party: {
       title: 'Gap by Dominant Party',
-      description:
-        'Grouped comparison shell for average gap score by dominant party representation.',
-      note:
-        'Reserved for statistical annotation such as confidence intervals or test results.',
+      description: 'Average county gap score by dominant party classification.',
+      note: 'Party summaries use county-level dominant party assignment from the project dataset and state-average LCV delegation scores.',
     },
     demographics: {
       title: 'Demographic Exposure',
-      description:
-        'Placeholder comparison of high-burden exposure rates by demographic group.',
+      description: 'Summary of demographic burden and SVI fields currently available in the dashboard extract.',
       callouts: [
         {
-          title: 'Exposure rate',
-          text: 'Reserved for high-burden exposure percentages by group.',
+          title: 'Available fields',
+          text: 'The county extract includes demographic burden score and SVI.',
         },
         {
-          title: 'Disparity ratio',
-          text: 'Reserved for relative exposure ratios against the baseline population.',
+          title: 'Not surfaced',
+          text: 'Race and income exposure rates are not included in the current dashboard extract.',
         },
         {
-          title: 'Interpretation',
-          text: 'Use descriptive wording and avoid unsupported causal claims.',
+          title: 'Next data pass',
+          text: 'Group-specific exposure should be computed from tract-level source fields.',
         },
       ],
     },
     distribution: {
       title: 'Gap Score Distribution',
-      description:
-        'Histogram shell for the full gap score range, including the threshold used for high-gap classification.',
-      note:
-        'The threshold marker will use the final cutoff once real data is wired in.',
+      description: 'Distribution of county-level gap scores. A selected county is marked when active.',
+      note: 'The vertical threshold marks a Justice Gap 2.0 score of 2.',
     },
     methodology: {
       title: 'Methodology',
-      description:
-        'Pipeline overview for tract aggregation, data joins, score normalization, and county ranking.',
+      description: 'Pipeline summary for tract aggregation, state-level LCV merging, score normalization, and county ranking.',
     },
-  },
-  priorityCounties: [
-    { rank: '01', county: 'Muskogee County', state: 'OK', gap: '3.92', population: '66,606' },
-    { rank: '02', county: 'Buffalo County', state: 'SD', gap: '3.87', population: '1,859' },
-    { rank: '03', county: 'Todd County', state: 'SD', gap: '3.84', population: '9,353' },
-    { rank: '04', county: 'Seminole County', state: 'OK', gap: '3.81', population: '23,592' },
-    { rank: '05', county: 'Texas County', state: 'OK', gap: '3.80', population: '21,144' },
-  ],
-  countyDetailPlaceholder: {
-    name: 'Selected county',
-    description:
-      'Hover and click details will appear here once the county map and linked interactions are implemented.',
-    metrics: [
-      { label: 'Gap score', value: '--' },
-      { label: 'Burden score', value: '--' },
-      { label: 'LCV score', value: '--' },
-      { label: 'Population', value: '--' },
-    ],
   },
   methodSteps: [
     {
       title: 'EJSCREEN tract indicators',
       description:
-        'Load tract-level environmental and demographic indicators from EPA EJSCREEN.',
+        'Load tract-level environmental and demographic indicators.',
     },
     {
       title: 'County aggregation',
       description:
-        'Aggregate tract scores to counties using population-weighted burden measures.',
+        'Aggregate tract scores to counties using population weights.',
     },
     {
-      title: 'SVI and LCV merge',
+      title: 'SVI and state-level LCV merge',
       description:
-        'Join social vulnerability measures and environmental voting scores using consistent geography.',
+        'Join county vulnerability measures to state-average LCV delegation scores.',
     },
     {
       title: 'Gap score ranking',
       description:
-        'Normalize burden and representation metrics, calculate gap scores, and rank counties.',
+        'Normalize measures, calculate gap scores, and rank counties using the current representation proxy.',
     },
   ],
   footer: {
     title: 'Project files and sources',
-    description:
-      'Single-page dashboard scaffold prepared for map implementation, chart wiring, and data integration.',
+    description: 'County-level analytical dashboard using processed project outputs and public datasets.',
     items: [
-      'React',
-      'TypeScript',
-      'Vite',
-      'Tailwind CSS',
-      'Python',
-      'Pandas',
-      'GeoPandas',
-      'Plotly Dash',
-      'EPA EJSCREEN',
-      'CDC SVI',
-      'LCV scorecard',
-      'Census shapefiles',
+      'Tools: Python, Pandas, GeoPandas, React, TypeScript, D3',
+      'Sources: EPA EJSCREEN, CDC SVI, LCV scorecard, Census county geometry',
+      'Current representation measure: state-average LCV delegation score merged to counties',
     ],
   },
 };

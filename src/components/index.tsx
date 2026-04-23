@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
-import type { CountyDetail, Kpi, MethodStepContent, NavItem, PriorityCounty } from '../content/analysisContent';
+import { useMemo, useState, type ReactNode } from 'react';
+import type { Kpi, MethodStepContent, NavItem } from '../content/analysisContent';
+import type { CountyRecord } from '../data/types';
+import { formatDecimal, formatInteger, formatParty, getGapLabel } from '../utils/format';
 
 type DataPillProps = {
   children: ReactNode;
@@ -86,53 +88,22 @@ export function DashboardPanel({ aside, children, description, eyebrow, id, titl
   );
 }
 
-type FilterControlsProps = {
-  filters: Array<{ label: string; options?: string[]; type?: 'select' | 'toggle' }>;
-};
-
-export function FilterControls({ filters }: FilterControlsProps) {
-  return (
-    <div className="filter-row" aria-label="Placeholder filters">
-      {filters.map((filter) =>
-        filter.type === 'toggle' ? (
-          <div className="segmented-control" key={filter.label}>
-            {(filter.options ?? ['On', 'Off']).map((option, index) => (
-              <button className={index === 0 ? 'segmented-active' : ''} key={option} type="button">
-                {option}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <label className="filter-select" key={filter.label}>
-            <span>{filter.label}</span>
-            <select defaultValue={filter.options?.[0] ?? 'All'}>
-              {(filter.options ?? ['All']).map((option) => (
-                <option key={option}>{option}</option>
-              ))}
-            </select>
-          </label>
-        ),
-      )}
-    </div>
-  );
-}
-
 type LegendProps = {
   items?: Array<{ color: string; label: string }>;
 };
 
 export function Legend({
   items = [
-    { color: 'bg-burden-low', label: 'Lower' },
-    { color: 'bg-burden-mid', label: 'Middle' },
-    { color: 'bg-burden-high', label: 'Higher' },
+    { color: '#dbe7de', label: 'Lower' },
+    { color: '#d7c98f', label: 'Middle' },
+    { color: '#9f4f3f', label: 'Higher' },
   ],
 }: LegendProps) {
   return (
     <div className="legend-row" aria-label="Placeholder legend">
       {items.map((item) => (
         <span className="flex items-center gap-1.5" key={item.label}>
-          <span className={`h-2.5 w-2.5 rounded-sm ${item.color}`} />
+          <span className="h-2.5 w-2.5 rounded-sm border border-line/60" style={{ backgroundColor: item.color }} />
           {item.label}
         </span>
       ))}
@@ -143,121 +114,67 @@ export function Legend({
 type ChartContainerProps = {
   children: ReactNode;
   controls?: ReactNode;
+  note?: ReactNode;
+  selectionLabel?: string | null;
   legend?: ReactNode;
   title: string;
 };
 
-export function ChartContainer({ children, controls, legend, title }: ChartContainerProps) {
+export function ChartContainer({ children, controls, legend, note, selectionLabel, title }: ChartContainerProps) {
   return (
     <article className="chart-container">
       <div className="chart-toolbar">
         <h3 className="text-sm font-semibold text-ink">{title}</h3>
         {controls}
       </div>
+      {selectionLabel ? <div className="chart-selection-note border-b border-line pb-2 pt-0">{selectionLabel}</div> : null}
       {children}
+      {note ? <div className="chart-note">{note}</div> : null}
       {legend ? <div className="chart-legend">{legend}</div> : null}
     </article>
   );
 }
 
-type PlaceholderVizProps = {
-  label: string;
-  variant: 'map' | 'scatter' | 'bars' | 'grouped' | 'dumbbell' | 'histogram';
-};
+export function CountyDetailCard({ county, onClear }: { county: CountyRecord | null; onClear?: () => void }) {
+  if (!county) {
+    return (
+      <aside className="compact-card">
+        <p className="panel-eyebrow">Selected county</p>
+        <h3 className="mt-2 text-lg font-semibold">No county selected</h3>
+        <p className="mt-2 text-sm leading-6 text-muted">Select a county to inspect county-level burden and the current representation proxy.</p>
+      </aside>
+    );
+  }
 
-export function PlaceholderViz({ label, variant }: PlaceholderVizProps) {
-  return (
-    <div className={`placeholder-viz placeholder-${variant}`}>
-      <span className="placeholder-label">{label}</span>
-      {variant === 'scatter' ? <ScatterMarks /> : null}
-      {variant === 'bars' ? <BarMarks /> : null}
-      {variant === 'grouped' ? <GroupedMarks /> : null}
-      {variant === 'dumbbell' ? <DumbbellMarks /> : null}
-      {variant === 'histogram' ? <HistogramMarks /> : null}
-      {variant === 'map' ? <MapMarks /> : null}
-    </div>
-  );
-}
+  const metrics = [
+    { label: 'Gap score', value: formatDecimal(county.justiceGapScore, 2) },
+    { label: 'National rank', value: `#${formatInteger(county.justiceGapRank)}` },
+    { label: 'Population', value: formatInteger(county.population) },
+    { label: 'Burden score', value: formatDecimal(county.environmentalBurdenScore, 1) },
+    { label: 'Burden percentile', value: formatDecimal(county.burdenPercentile, 1) },
+    { label: 'SVI score', value: formatDecimal(county.vulnerabilityScore, 3) },
+    { label: 'State-average LCV score', value: formatDecimal(county.lcvScore, 1) },
+    { label: 'Dominant party', value: formatParty(county.dominantParty) },
+  ];
 
-function ScatterMarks() {
-  return (
-    <div className="absolute inset-8">
-      {Array.from({ length: 28 }).map((_, index) => (
-        <span
-          className="absolute h-2.5 w-2.5 rounded-full bg-accent/55 transition hover:bg-accent-dark"
-          key={index}
-          style={{ left: `${8 + ((index * 17) % 82)}%`, top: `${12 + ((index * 29) % 74)}%` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-function BarMarks() {
-  return (
-    <div className="absolute inset-x-8 bottom-8 top-14 flex flex-col justify-end gap-2.5">
-      {[84, 76, 64, 57, 43, 35, 28].map((width) => (
-        <span className="h-4 rounded-sm bg-accent/45 transition hover:bg-accent" key={width} style={{ width: `${width}%` }} />
-      ))}
-    </div>
-  );
-}
-
-function GroupedMarks() {
-  return (
-    <div className="absolute inset-x-8 bottom-8 top-14 grid grid-cols-4 items-end gap-5">
-      {[65, 40, 72, 38].map((height, index) => (
-        <div className="flex items-end justify-center gap-1" key={height}>
-          <span className="w-5 rounded-t-sm bg-accent/55" style={{ height: `${height}%` }} />
-          <span className="w-5 rounded-t-sm bg-burden-high/70" style={{ height: `${index % 2 ? 62 : 35}%` }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function DumbbellMarks() {
-  return (
-    <div className="absolute inset-x-8 bottom-10 top-14 flex flex-col justify-around">
-      {[22, 37, 51].map((start, index) => (
-        <div className="relative h-px bg-line" key={start}>
-          <span className="absolute -top-1.5 h-3 w-3 rounded-full bg-accent" style={{ left: `${start}%` }} />
-          <span className="absolute -top-1.5 h-3 w-3 rounded-full bg-burden-high" style={{ left: `${start + 28 - index * 4}%` }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function HistogramMarks() {
-  return (
-    <div className="absolute inset-x-8 bottom-8 top-14 flex items-end gap-1.5">
-      {[18, 30, 44, 64, 78, 70, 56, 38, 25, 16, 10, 8].map((height) => (
-        <span className="flex-1 rounded-t-sm bg-accent/45 transition hover:bg-accent" key={height} style={{ height: `${height}%` }} />
-      ))}
-      <span className="absolute bottom-0 top-0 left-[78%] border-l border-dashed border-burden-high" />
-    </div>
-  );
-}
-
-function MapMarks() {
-  return (
-    <div className="absolute inset-6 grid grid-cols-12 gap-1.5">
-      {Array.from({ length: 108 }).map((_, index) => (
-        <span className={`rounded-[2px] map-cell shade-${index % 5}`} key={index} />
-      ))}
-    </div>
-  );
-}
-
-export function CountyDetailCard({ county }: { county: CountyDetail }) {
   return (
     <aside className="compact-card">
-      <p className="panel-eyebrow">Selected county</p>
-      <h3 className="mt-2 text-lg font-semibold">{county.name}</h3>
-      <p className="mt-2 text-sm leading-6 text-muted">{county.description}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="panel-eyebrow">Selected county</p>
+          <h3 className="mt-2 text-lg font-semibold">
+            {county.countyName}, {county.stateAbbrev}
+          </h3>
+        </div>
+        {onClear ? (
+          <button className="control-button" onClick={onClear} type="button">
+            Clear
+          </button>
+        ) : null}
+      </div>
+      <p className="mt-2 text-sm leading-6 text-muted">{getGapLabel(county.justiceGapScore)}</p>
       <dl className="mt-4 grid grid-cols-2 gap-3">
-        {county.metrics.map((metric) => (
+        {metrics.map((metric) => (
           <div className="border-t border-line pt-2" key={metric.label}>
             <dt className="text-xs text-muted">{metric.label}</dt>
             <dd className="mt-1 font-mono text-sm text-ink">{metric.value}</dd>
@@ -277,12 +194,39 @@ export function StatNote({ children, title = 'Note' }: { children: ReactNode; ti
   );
 }
 
-export function PriorityTable({ rows }: { rows: PriorityCounty[] }) {
+export function PriorityTable({
+  onSelect,
+  rows,
+  selectedFips,
+}: {
+  onSelect?: (countyFips: string) => void;
+  rows: CountyRecord[];
+  selectedFips?: string | null;
+}) {
+  const [query, setQuery] = useState('');
+  const filteredRows = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return rows;
+    return rows.filter(
+      (county) =>
+        county.countyName.toLowerCase().includes(normalized) ||
+        county.stateAbbrev.toLowerCase().includes(normalized) ||
+        county.stateName.toLowerCase().includes(normalized),
+    );
+  }, [query, rows]);
+
   return (
     <div className="compact-card overflow-hidden p-0">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <h3 className="text-sm font-semibold">County table</h3>
-        <input className="table-search" placeholder="Search" type="search" />
+        <input
+          aria-label="Search counties"
+          className="table-search"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search"
+          type="search"
+          value={query}
+        />
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
@@ -296,18 +240,25 @@ export function PriorityTable({ rows }: { rows: PriorityCounty[] }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((county) => (
-              <tr className="border-t border-line/80 transition hover:bg-accent-pale/60" key={county.rank}>
-                <td className="px-4 py-2.5 font-mono text-xs">{county.rank}</td>
-                <td className="px-4 py-2.5 font-medium">{county.county}</td>
-                <td className="px-4 py-2.5 text-muted">{county.state}</td>
-                <td className="px-4 py-2.5 font-mono">{county.gap}</td>
-                <td className="px-4 py-2.5 text-muted">{county.population}</td>
+            {filteredRows.map((county) => (
+              <tr
+                className={`cursor-pointer border-t border-line/80 transition hover:bg-accent-pale/60 ${
+                  selectedFips === county.countyFips ? 'selected-row' : ''
+                }`}
+                key={county.countyFips}
+                onClick={() => onSelect?.(county.countyFips)}
+              >
+                <td className="px-4 py-2.5 font-mono text-xs">{formatInteger(county.justiceGapRank)}</td>
+                <td className="px-4 py-2.5 font-medium">{county.countyName}</td>
+                <td className="px-4 py-2.5 text-muted">{county.stateAbbrev}</td>
+                <td className="px-4 py-2.5 font-mono">{formatDecimal(county.justiceGapScore, 2)}</td>
+                <td className="px-4 py-2.5 text-muted">{formatInteger(county.population)}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      {!filteredRows.length ? <p className="border-t border-line px-4 py-3 text-sm text-muted">No matching counties.</p> : null}
     </div>
   );
 }
