@@ -21,7 +21,6 @@ Thumbs.db
 *.freelist
 *.atx
 *.spx
-
 *.gdb/
 state districts/
 
@@ -29,7 +28,6 @@ state districts/
 *.tar
 *.gz
 *.7z
-
 *.png
 
 node_modules/
@@ -37,6 +35,8 @@ dist/
 .vite/
 npm-debug.log*
 vite-dev*.log
+
+# allow only processed dashboard frontend data
 !public/data/
-!public/data/*.json
-.vercel
+!public/data/dashboard-counties.json
+!public/data/us-counties-albers-10m.json
