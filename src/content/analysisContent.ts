@@ -99,8 +99,8 @@ export const analysisContent = {
     },
     party: {
       title: 'Gap by Dominant Party',
-      description: 'Average county gap score by dominant party classification.',
-      note: 'Party summaries use county-level dominant party assignment from the project dataset and state-average LCV delegation scores.',
+      description: 'Compares average county burden, gap score, and state-average LCV score across dominant party groups.',
+      note: 'In the current extract, burden differs modestly across D and R counties, while the state-average LCV proxy differs sharply. Counties inherit the same LCV value as other counties in their state.',
     },
     demographics: {
       title: 'Demographic Exposure',

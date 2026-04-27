@@ -19,6 +19,20 @@ export type PartySummary = {
   population: number;
 };
 
+export type PartyContrastSummary = {
+  burdenCorrelation: number | null;
+  burdenDifference: number | null;
+  burdenMeanDem: number | null;
+  burdenMeanRep: number | null;
+  gapDifference: number | null;
+  gapMeanDem: number | null;
+  gapMeanRep: number | null;
+  lcvCorrelation: number | null;
+  lcvDifference: number | null;
+  lcvMeanDem: number | null;
+  lcvMeanRep: number | null;
+};
+
 export type HistogramBin = {
   count: number;
   end: number;
@@ -39,6 +53,19 @@ function mean(values: number[]): number {
 
 function validNumber(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && !Number.isNaN(value);
+}
+
+function correlation(x: number[], y: number[]): number | null {
+  if (x.length !== y.length || x.length < 2) return null;
+
+  const xMean = mean(x);
+  const yMean = mean(y);
+  const numerator = x.reduce((sum, value, index) => sum + (value - xMean) * (y[index] - yMean), 0);
+  const xVariance = x.reduce((sum, value) => sum + (value - xMean) ** 2, 0);
+  const yVariance = y.reduce((sum, value) => sum + (value - yMean) ** 2, 0);
+
+  if (!xVariance || !yVariance) return null;
+  return numerator / Math.sqrt(xVariance * yVariance);
 }
 
 export function getStateSummaries(counties: CountyRecord[]): StateSummary[] {
@@ -82,6 +109,52 @@ export function getPartySummaries(counties: CountyRecord[]): PartySummary[] {
       population: rows.reduce((sum, row) => sum + (row.population ?? 0), 0),
     }))
     .sort((a, b) => order.indexOf(a.party) - order.indexOf(b.party));
+}
+
+export function getPartyContrastSummary(counties: CountyRecord[]): PartyContrastSummary {
+  const majorPartyCounties = counties.filter((county) => county.dominantParty === 'D' || county.dominantParty === 'R');
+  const demCounties = majorPartyCounties.filter((county) => county.dominantParty === 'D');
+  const repCounties = majorPartyCounties.filter((county) => county.dominantParty === 'R');
+
+  const burdenMeanDem = mean(demCounties.map((county) => county.environmentalBurdenScore).filter(validNumber));
+  const burdenMeanRep = mean(repCounties.map((county) => county.environmentalBurdenScore).filter(validNumber));
+  const lcvMeanDem = mean(demCounties.map((county) => county.lcvScore).filter(validNumber));
+  const lcvMeanRep = mean(repCounties.map((county) => county.lcvScore).filter(validNumber));
+  const gapMeanDem = mean(demCounties.map((county) => county.justiceGapScore).filter(validNumber));
+  const gapMeanRep = mean(repCounties.map((county) => county.justiceGapScore).filter(validNumber));
+
+  const burdenPoints = majorPartyCounties
+    .filter((county) => validNumber(county.environmentalBurdenScore))
+    .map((county) => ({
+      party: county.dominantParty === 'D' ? 1 : 0,
+      value: county.environmentalBurdenScore as number,
+    }));
+  const lcvPoints = majorPartyCounties
+    .filter((county) => validNumber(county.lcvScore))
+    .map((county) => ({
+      party: county.dominantParty === 'D' ? 1 : 0,
+      value: county.lcvScore as number,
+    }));
+
+  return {
+    burdenCorrelation: correlation(
+      burdenPoints.map((point) => point.party),
+      burdenPoints.map((point) => point.value),
+    ),
+    burdenDifference: burdenMeanRep - burdenMeanDem,
+    burdenMeanDem,
+    burdenMeanRep,
+    gapDifference: gapMeanRep - gapMeanDem,
+    gapMeanDem,
+    gapMeanRep,
+    lcvCorrelation: correlation(
+      lcvPoints.map((point) => point.party),
+      lcvPoints.map((point) => point.value),
+    ),
+    lcvDifference: lcvMeanDem - lcvMeanRep,
+    lcvMeanDem,
+    lcvMeanRep,
+  };
 }
 
 export function getHistogramBins(counties: CountyRecord[], binCount = 28): HistogramBin[] {

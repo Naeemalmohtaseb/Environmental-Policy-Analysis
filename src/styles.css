@@ -303,6 +303,18 @@ body {
   .metric-tile {
     @apply rounded-sm border border-line bg-paper p-4;
   }
+
+  .insight-grid {
+    @apply mb-3 grid gap-3 md:grid-cols-3;
+  }
+
+  .insight-metric-value {
+    @apply mt-2 font-mono text-2xl font-semibold tracking-tight text-ink;
+  }
+
+  .insight-metric-detail {
+    @apply mt-2 text-xs leading-5 text-muted;
+  }
 }
 
 .subtle-fade {

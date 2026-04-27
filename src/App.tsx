@@ -19,7 +19,13 @@ import { GapDistributionChart } from './components/charts/GapDistributionChart';
 import { PartyComparisonChart } from './components/charts/PartyComparisonChart';
 import { ScatterPlot } from './components/charts/ScatterPlot';
 import { StateSummaryChart } from './components/charts/StateSummaryChart';
-import { getDemographicSummary, getHistogramBins, getPartySummaries, getStateSummaries } from './data/derived';
+import {
+  getDemographicSummary,
+  getHistogramBins,
+  getPartyContrastSummary,
+  getPartySummaries,
+  getStateSummaries,
+} from './data/derived';
 import { useDashboardData } from './data/useDashboardData';
 import { getMapScale, type MapMetric } from './utils/mapScale';
 import { formatCompact, formatDecimal, formatInteger } from './utils/format';
@@ -110,6 +116,7 @@ function App() {
     return summaries.sort((a, b) => b.meanGap - a.meanGap).slice(0, 15);
   }, [counties, stateSortMode]);
   const partySummaries = useMemo(() => getPartySummaries(counties), [counties]);
+  const partyContrast = useMemo(() => getPartyContrastSummary(counties), [counties]);
   const histogramBins = useMemo(() => getHistogramBins(counties), [counties]);
   const demographicSummary = useMemo(() => getDemographicSummary(counties), [counties]);
   const mapScale = useMemo(() => getMapScale(counties, mapMetric), [counties, mapMetric]);
@@ -128,6 +135,12 @@ function App() {
     : distributionLookup.trim()
       ? 'No exact county match.'
       : null;
+  const partyChartTitle =
+    partyMeasure === 'meanLcv'
+      ? 'Average state-average LCV score by dominant party'
+      : partyMeasure === 'meanBurden'
+        ? 'Average burden score by dominant party'
+        : 'Average gap score by dominant party';
   const mapLegendItems = useMemo(() => {
     const digits = mapMetric === 'justiceGapScore' ? 2 : 1;
     const labels =
@@ -366,10 +379,17 @@ function App() {
           eyebrow="Gap by Dominant Party"
           id="party-comparison"
           title={sections.party.title}
-          aside={<StatNote title="Annotation">{sections.party.note}</StatNote>}
+          aside={
+            <>
+              <StatNote title="Interpretation">
+                Average burden is relatively close across D and R counties in this extract. The much larger split appears in the current state-average LCV proxy, so the gap difference is driven more by representation alignment than by a large burden difference.
+              </StatNote>
+              <StatNote title="Current limitation">{sections.party.note}</StatNote>
+            </>
+          }
         >
           <ChartContainer
-            title="Average gap by dominant party"
+            title={partyChartTitle}
             controls={
               <label className="filter-select">
                 <span>Measure</span>
@@ -380,6 +400,13 @@ function App() {
                 </select>
               </label>
             }
+            note={`D/R burden difference: ${formatDecimal(partyContrast.burdenDifference, 1)} points. D/R state-average LCV difference: ${formatDecimal(
+              partyContrast.lcvDifference,
+              1,
+            )} points. Correlation with party is much stronger for LCV (${formatDecimal(partyContrast.lcvCorrelation, 2)}) than for burden (${formatDecimal(
+              partyContrast.burdenCorrelation,
+              2,
+            )}).`}
             legend={
               <Legend
                 items={[
@@ -390,6 +417,29 @@ function App() {
               />
             }
           >
+            <div className="insight-grid">
+              <div className="metric-tile">
+                <p className="panel-eyebrow">Burden split</p>
+                <p className="insight-metric-value">{formatDecimal(partyContrast.burdenDifference, 1)} pts</p>
+                <p className="insight-metric-detail">
+                  D: {formatDecimal(partyContrast.burdenMeanDem, 1)} | R: {formatDecimal(partyContrast.burdenMeanRep, 1)}
+                </p>
+              </div>
+              <div className="metric-tile">
+                <p className="panel-eyebrow">LCV split</p>
+                <p className="insight-metric-value">{formatDecimal(partyContrast.lcvDifference, 1)} pts</p>
+                <p className="insight-metric-detail">
+                  D: {formatDecimal(partyContrast.lcvMeanDem, 1)} | R: {formatDecimal(partyContrast.lcvMeanRep, 1)}
+                </p>
+              </div>
+              <div className="metric-tile">
+                <p className="panel-eyebrow">Gap split</p>
+                <p className="insight-metric-value">{formatDecimal(partyContrast.gapDifference, 2)} pts</p>
+                <p className="insight-metric-detail">
+                  D: {formatDecimal(partyContrast.gapMeanDem, 2)} | R: {formatDecimal(partyContrast.gapMeanRep, 2)}
+                </p>
+              </div>
+            </div>
             <PartyComparisonChart measure={partyMeasure} parties={partySummaries} />
           </ChartContainer>
         </DashboardPanel>
