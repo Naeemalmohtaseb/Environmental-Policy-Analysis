@@ -13,6 +13,7 @@ import {
   StatNote,
 } from './components';
 import { CountyGapMap } from './components/CountyGapMap';
+import { BurdenByPartyChart } from './components/charts/BurdenByPartyChart';
 import { CountyRankChart } from './components/charts/CountyRankChart';
 import { DemographicSummaryPanel } from './components/charts/DemographicSummaryPanel';
 import { GapDistributionChart } from './components/charts/GapDistributionChart';
@@ -394,6 +395,7 @@ function App() {
               <StatNote title="Main result">
                 Average burden is fairly close across D and R counties in this extract. The larger separation is in the current state-average LCV proxy, so the gap split is driven more by representation alignment than by a large burden split.
               </StatNote>
+              <BurdenByPartyChart summary={partyContrast} />
               <StatNote title="Scope note">{sections.party.note}</StatNote>
             </>
           }

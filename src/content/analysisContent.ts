@@ -99,7 +99,7 @@ export const analysisContent = {
     },
     party: {
       title: 'Representation Split by Party',
-      description: 'Compares average county burden, gap score, and the state-average LCV proxy across party groups. The burden split is modest; the LCV split is much larger.',
+      description: 'Compares county burden, gap score, and the state-average LCV proxy across party groups. In the current extract, party is much more strongly associated with the LCV proxy than with burden.',
       note: 'This pattern is partly structural. Counties inherit the same LCV value as other counties in their state, so the party split reflects state-level delegation scores as much as county conditions.',
     },
     demographics: {
