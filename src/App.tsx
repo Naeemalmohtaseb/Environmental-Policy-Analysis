@@ -17,6 +17,7 @@ import { CountyRankChart } from './components/charts/CountyRankChart';
 import { DemographicSummaryPanel } from './components/charts/DemographicSummaryPanel';
 import { GapDistributionChart } from './components/charts/GapDistributionChart';
 import { PartyComparisonChart } from './components/charts/PartyComparisonChart';
+import { PartySplitDiagnosticChart } from './components/charts/PartySplitDiagnosticChart';
 import { ScatterPlot } from './components/charts/ScatterPlot';
 import { StateSummaryChart } from './components/charts/StateSummaryChart';
 import {
@@ -83,7 +84,7 @@ function App() {
       {
         label: 'Counties ranked',
         value: formatInteger(kpis.countiesRanked),
-        description: 'County records with burden scores and the current representation proxy.',
+        description: 'County records with burden scores and the current state-level representation proxy.',
       },
       {
         label: 'Extreme-gap counties',
@@ -245,7 +246,7 @@ function App() {
                 </button>
               </div>
             }
-            note="Map colors use metric-specific quintile breaks. Higher gap scores indicate counties with higher environmental burden and lower environmental voting support. LCV values in this dashboard are state-average delegation scores."
+            note="Map colors use metric-specific quintile breaks. The burden view is county-level. The LCV view is a state-average delegation score merged to counties."
             selectionLabel={selectedCountyLabel}
             legend={<Legend items={mapLegendItems} />}
           >
@@ -269,12 +270,12 @@ function App() {
 
         <DashboardPanel
           description={sections.scatter.description}
-          eyebrow="Burden vs. State-Average Voting Score"
+          eyebrow="Burden vs. State-Average LCV"
           id="relationship"
           title={sections.scatter.title}
           aside={
-            <StatNote title="View note">
-              This compares county burden to a state-average LCV delegation score, so counties in the same state share the same x-axis value. The trend line is descriptive, not causal.
+            <StatNote title="Read this first">
+              The vertical bands are expected. Counties in the same state share the same state-average LCV value in the current extract. The trend line is descriptive only.
             </StatNote>
           }
         >
@@ -298,7 +299,11 @@ function App() {
                 </label>
               </div>
             }
-            note={scatterSizeMode === 'uniform' ? 'Points use a uniform marker size.' : 'Point size represents population.'}
+            note={
+              scatterSizeMode === 'uniform'
+                ? 'Points use a uniform marker size.'
+                : 'Point size represents population. The x-axis is a state-level voting proxy, not a county vote measure.'
+            }
             selectionLabel={selectedCountyLabel}
             legend={
               scatterColorMode === 'party' ? (
@@ -352,10 +357,15 @@ function App() {
 
         <DashboardPanel
           description={sections.states.description}
-          eyebrow="State Summary"
+          eyebrow="State Pattern"
           id="state-summary"
           title={sections.states.title}
-          aside={<StatNote title="Summary level">{sections.states.note}</StatNote>}
+          aside={
+            <>
+              <StatNote title="Summary level">{sections.states.note}</StatNote>
+              <StatNote title="Interpretation">This panel is included because part of the county gap pattern is inherited from state-level LCV values.</StatNote>
+            </>
+          }
         >
           <ChartContainer
             title="State-level average gap"
@@ -376,15 +386,15 @@ function App() {
 
         <DashboardPanel
           description={sections.party.description}
-          eyebrow="Gap by Dominant Party"
+          eyebrow="Representation Split by Party"
           id="party-comparison"
           title={sections.party.title}
           aside={
             <>
-              <StatNote title="Interpretation">
-                Average burden is relatively close across D and R counties in this extract. The much larger split appears in the current state-average LCV proxy, so the gap difference is driven more by representation alignment than by a large burden difference.
+              <StatNote title="Main result">
+                Average burden is fairly close across D and R counties in this extract. The larger separation is in the current state-average LCV proxy, so the gap split is driven more by representation alignment than by a large burden split.
               </StatNote>
-              <StatNote title="Current limitation">{sections.party.note}</StatNote>
+              <StatNote title="Scope note">{sections.party.note}</StatNote>
             </>
           }
         >
@@ -403,7 +413,7 @@ function App() {
             note={`D/R burden difference: ${formatDecimal(partyContrast.burdenDifference, 1)} points. D/R state-average LCV difference: ${formatDecimal(
               partyContrast.lcvDifference,
               1,
-            )} points. Correlation with party is much stronger for LCV (${formatDecimal(partyContrast.lcvCorrelation, 2)}) than for burden (${formatDecimal(
+            )} points. Correlation with party is much stronger for the LCV proxy (${formatDecimal(partyContrast.lcvCorrelation, 2)}) than for burden (${formatDecimal(
               partyContrast.burdenCorrelation,
               2,
             )}).`}
@@ -417,6 +427,7 @@ function App() {
               />
             }
           >
+            <PartySplitDiagnosticChart summary={partyContrast} />
             <div className="insight-grid">
               <div className="metric-tile">
                 <p className="panel-eyebrow">Burden split</p>

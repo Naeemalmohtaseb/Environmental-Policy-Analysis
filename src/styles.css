@@ -265,6 +265,10 @@ body {
     filter: brightness(0.94);
   }
 
+  .diagnostic-bar-track {
+    fill: rgba(31, 41, 51, 0.06);
+  }
+
   .selected-row {
     @apply bg-accent-pale/90 shadow-[inset_3px_0_0_#1f2933];
   }
